@@ -1,0 +1,132 @@
+<project name="boggle" default="full" basedir=".">
+  <description>
+	The project starts a Boggle game and allows the user to play
+	with it. To build the project, just type ant.
+  </description>
+
+  <!-- Global Properties -->
+
+  <property name="srcDir"  location="src" />
+  <property name="libDir"  location="lib" />
+
+  <property name="buildDir" location="build"/>
+  <property name="buildClassesDir" location="${buildDir}/classes"/>
+  <property name="javaDocDir" location="${buildDir}/javadoc"/>
+
+  <property name="testSrcDir" location="test"/>
+  <property name="testBuildDir" location="${buildDir}/tests"/>
+  <property name="testResultsDir" location="${buildDir}/results"/>
+	
+  <property name="testNGFile" location="${libDir}/testng-6.8.jar" />
+
+  <!-- Library Paths -->
+
+  <!--
+  This path is for libraries used during the normal compile process.  IT IS NOT
+  FOR UNIT-TESTING LIBRARIES.  For unit-testing libraries, see "test.path"
+  below.
+  -->
+  <path id="libs.path">
+    <!-- Example library dependency.
+    <fileset dir="${libDir}">
+      <include name="antlr-2.7.5.jar" />
+    </fileset>
+    -->
+  </path>
+
+  <!--
+  This path is for libraries used during testing.  It includes the library files
+  as well.
+  -->
+  <path id="test.path">
+    <path refid="libs.path" />
+
+    <!-- We need to include the directory where the project classes end up! -->
+    <pathelement location="${buildClassesDir}" />
+
+    <!-- Includes the testNG Jar file -->
+  	<pathelement location="${testNGFile}" />
+  	
+  </path>
+	
+  <taskdef resource="testngtasks" classpath="${testNGFile}" />
+
+  <!-- Build Targets -->
+
+  <target name="full" depends="test,javadoc"
+          description="Runs test and javadoc targets in that order." />
+
+  <!-- Initialization target. -->
+  <target name="-init">
+    <tstamp/>
+    <mkdir dir="${buildDir}" />
+  </target>
+
+  <target name="debug"
+          description="Set properties for a debug build.">
+    <property name="java.debug" value="on" />
+    <property name="java.opt"   value="off" />
+  </target>
+
+  <target name="release"
+          description="Set properties for a release build.">
+    <property name="java.debug" value="off" />
+    <property name="java.opt"   value="on" />
+  </target>
+	
+  <target name="clean"
+  		description="Cleans the entire build directory.">
+  	<delete dir="${buildDir}"/>
+  </target>
+	
+  <target name="javadoc" depends="-init" 
+  	description="Generates javadoc API documention for project.">
+  	
+  	<javadoc destdir="${javaDocDir}" author="true" 
+  		version="true" private="true"> 
+  		<fileset dir="${srcDir}"/>
+  	</javadoc>
+  </target>
+	
+	
+  <target name="compile-tests" depends="compile"
+          description="Compile the project test source-code." >
+
+    <mkdir dir="${testBuildDir}" />
+
+    <javac destdir="${testBuildDir}" classpathref="test.path"
+           debug="${java.debug}" optimize="${java.opt}" deprecation="on">
+      <src path="${testSrcDir}" />
+    </javac>
+  	
+  	<!-- Copies text testing files over -->
+  	<copy todir="${testBuildDir}">
+  		<fileset dir="${testSrcDir}">
+  			<include name="**/*.txt" />
+  		</fileset>
+  	</copy>
+  </target>
+		
+  <target name="test" depends="compile-tests"
+	description="Runs all the unit tests">
+	<testng suitename="boggle-tests" outputdir="${testResultsDir}">
+  		<classpath>
+		  <path refid="test.path" />
+  		  <pathelement path="${testBuildDir}" />
+  		</classpath>
+		<classfileset dir="${testBuildDir}" />
+  	</testng>
+  </target>
+
+  <target name="compile" depends="debug"
+          description="Compile the project source-code." >
+
+    <mkdir dir="${buildClassesDir}" />
+
+    <javac destdir="${buildClassesDir}" classpathref="libs.path"
+           debug="${java.debug}" optimize="${java.opt}" deprecation="on">
+      <src path="${srcDir}" />
+    </javac>
+  </target>
+
+</project>
