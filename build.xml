@@ -99,12 +99,6 @@
       <src path="${testSrcDir}" />
     </javac>
   	
-  	<!-- Copies text testing files over -->
-  	<copy todir="${testBuildDir}">
-  		<fileset dir="${testSrcDir}">
-  			<include name="**/*.txt" />
-  		</fileset>
-  	</copy>
   </target>
 		
   <target name="test" depends="compile-tests"
